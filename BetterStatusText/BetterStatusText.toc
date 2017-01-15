@@ -1,0 +1,9 @@
+## Interface: 70100
+## Title: BetterStatusText
+## Title-deDE: Verbesserte Statusanzeige
+## Notes: Styles the standard Status Text
+## Notes-deDE: Verschönert den standard Status Text
+## Author: Marone.Ambossar-EU
+## Version: 1.0
+
+BetterStatusText.lua
