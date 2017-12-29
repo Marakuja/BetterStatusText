@@ -1,95 +1,44 @@
 -- hook to secure func TextStatusBar_UpdateTextStringWithValues from TextStatusBar.lua in Blizzard Standard UI
 -- most of it is copy and paste from the standard lua.. Maybe shorten the not-used-parts for slightly better performance?
-
 hooksecurefunc("TextStatusBar_UpdateTextStringWithValues", function(statusFrame, textString, value, valueMin, valueMax)
-
-	-- if( statusFrame.LeftText and statusFrame.RightText ) then
-	-- 	statusFrame.LeftText:SetText("");
-	-- 	statusFrame.RightText:SetText("");
-	-- 	statusFrame.LeftText:Hide();
-	-- 	statusFrame.RightText:Hide();
-	-- end
-
-	if ( ( tonumber(valueMax) ~= valueMax or valueMax > 0 ) and not ( statusFrame.pauseUpdates ) ) then
-		-- statusFrame:Show();
-		
-		-- if ( (statusFrame.cvar and GetCVar(statusFrame.cvar) == "1" and statusFrame.textLockable) or statusFrame.forceShow ) then
-		-- 	textString:Show();
-		-- elseif ( statusFrame.lockShow > 0 and (not statusFrame.forceHideText) ) then
-		-- 	textString:Show();
-		-- else
-		-- 	textString:SetText("");
-		-- 	textString:Hide();
-		-- 	return;
-		-- end
-
-		local valueDisplay = value;
-		local valueMaxDisplay = valueMax;
-		if ( statusFrame.capNumericDisplay ) then
-			valueDisplay = OwnAbbreviateLargeNumbers(value); -- My own Abbreviationfunction (smaller numbers)
-			valueMaxDisplay = OwnAbbreviateLargeNumbers(valueMax); -- My own Abbreviationfunction (smaller numbers)
-		else
-			valueDisplay = BreakUpLargeNumbers(value);
-			valueMaxDisplay = BreakUpLargeNumbers(valueMax);
-		end
-
-		local mytext = "";
-		local textDisplay = GetCVar("statusTextDisplay");
-		if ( value and valueMax > 0 and ( textDisplay ~= "NUMERIC" or statusFrame.showPercentage ) and not statusFrame.showNumeric) then
-			if ( value == 0 and statusFrame.zeroText ) then
-				textString:SetText(statusFrame.zeroText);
-				statusFrame.isZero = 1;
-				textString:Show();
-			elseif ( textDisplay == "BOTH" and not statusFrame.showPercentage) then
-				-- BOTH
-                -- here begins our addition, mytext for storing information
-				if( statusFrame.LeftText and statusFrame.RightText ) then
-					if(not statusFrame.powerToken or statusFrame.powerToken == "MANA") then
-						mytext = math.ceil((value / valueMax) * 100) .. "% " -- only show the percentage when showing Mana
-						-- statusFrame.LeftText:SetText(math.ceil((value / valueMax) * 100) .. "%");
-						statusFrame.LeftText:Hide(); -- hide LeftText string
-					end
-					-- statusFrame.RightText:SetText(valueDisplay);
-					statusFrame.RightText:Hide(); -- hide RightText string
-					textString:Show(); -- now show the middle textString
-				else
-					valueDisplay = "(" .. math.ceil((value / valueMax) * 100) .. "%) " .. valueDisplay .. " / " .. valueMaxDisplay;
-				end
-				textString:SetText(mytext .. valueDisplay); -- set the textstring to our generated values
-			else
-				--NONE -> no % please
-				if(not statusFrame.powerToken or statusFrame.powerToken == "MANA") then
-					mytext = math.ceil((value / valueMax) * 100) .. "% " -- only show the percentage when showing Mana
-					-- statusFrame.LeftText:SetText(math.ceil((value / valueMax) * 100) .. "%");
-				end
-				textString:SetText(mytext .. valueDisplay);
-			end
-		else
-			--NUMERIC
-		end
-	end
+    if ((tonumber(valueMax) ~= valueMax or valueMax > 0) and not (statusFrame.pauseUpdates)) then
+        statusFrame:Show();
+        
+        local valueDisplay = value;
+        local valueMaxDisplay = valueMax;
+        valueDisplay = OwnAbbreviateLargeNumbers(value); -- My own Abbreviationfunction (smaller numbers)
+        valueMaxDisplay = OwnAbbreviateLargeNumbers(valueMax); -- My own Abbreviationfunction (smaller numbers)
+        
+        local mytext = "";
+        local textDisplay = GetCVar("statusTextDisplay");
+        if (value and valueMax > 0 and ((textDisplay ~= "NUMERIC" and textDisplay ~= "NONE") or statusFrame.showPercentage) and not statusFrame.showNumeric) then
+            if (textDisplay == "BOTH" and not statusFrame.showPercentage) then
+                if (statusFrame.LeftText and statusFrame.RightText) then
+                    if (not statusFrame.powerToken or statusFrame.powerToken == "MANA") then
+                        mytext = math.ceil((value / valueMax) * 100) .. "% " -- only show the percentage when showing Mana
+                    end
+                    statusFrame.LeftText:Hide(); -- hide LeftText string
+                    statusFrame.RightText:Hide(); -- hide RightText string
+                else
+                    valueDisplay = math.ceil((value / valueMax) * 100) .. "% " .. valueDisplay;
+                end
+                textString:SetText(mytext .. valueDisplay); -- set the textstring to our generated values
+                textString:Show(); -- now show the middle textString
+            end
+        end
+    end
 end)
 
 -- Everytime, when displaying numbers, abbreviate immediately when reaching the next 1k
 function OwnAbbreviateLargeNumbers(value)
-	local strLen = strlen(value);
-	local retString = value;
-	if (true) then
-		if ( strLen >= 10 ) then
-			retString = string.sub(value, 1, -10).."."..string.sub(value, -9, -9).."G";
-		elseif ( strLen >= 7 ) then
-			retString = string.sub(value, 1, -7).."."..string.sub(value, -6, -6).."M";
-		elseif ( strLen >= 4 ) then
-			retString = string.sub(value, 1, -4).."."..string.sub(value, -3, -3).."k";
-		end
-	else
-		if ( strLen >= 10 ) then
-			retString = string.sub(value, 1, -10).."G";
-		elseif ( strLen >= 7 ) then
-			retString = string.sub(value, 1, -7).."M";
-		elseif ( strLen >= 4 ) then
-			retString = string.sub(value, 1, -4).."k";
-		end
-	end
-	return retString;
+    local strLen = strlen(value);
+    local retString = value;
+    if (strLen >= 10) then
+        retString = string.sub(value, 1, -10) .. "." .. string.sub(value, -9, -9) .. "G";
+    elseif (strLen >= 7) then
+        retString = string.sub(value, 1, -7) .. "." .. string.sub(value, -6, -6) .. "M";
+    elseif (strLen >= 4) then
+        retString = string.sub(value, 1, -4) .. "." .. string.sub(value, -3, -3) .. "k";
+    end
+    return retString;
 end
